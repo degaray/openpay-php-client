@@ -141,6 +141,6 @@ class OpenpayCardAdapter extends OpenpayAdapterAbstract
 
         $this->callOpenpayClient($relativeUrl, $this->options, self::DELETE_METHOD);
 
-        return true;
+        return self::ENTITY_DELETED_SUCCESSFULLY;
     }
 }

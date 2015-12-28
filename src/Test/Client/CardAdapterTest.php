@@ -124,6 +124,17 @@ class CardAdapterTest extends TestAbstract
         $this->assertNotEmpty($openpayCards[0]->getId(), 'Id is not empty');
     }
 
+    public function test_delete_card()
+    {
+        $openpayCustomers = $this->customerAdapter->getList();
+        $testCustomerId = $openpayCustomers[count($openpayCustomers)-1]->getId();
+        $openpayCards = $this->cardAdapter->getList($testCustomerId);
+
+        $deleted = $this->cardAdapter->delete($testCustomerId, $openpayCards[0]->getId());
+
+        $this->assertTrue($deleted);
+    }
+
     /**
      * @return string
      */

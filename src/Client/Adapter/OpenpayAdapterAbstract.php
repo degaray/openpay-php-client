@@ -20,6 +20,7 @@ class OpenpayAdapterAbstract
     const POST_METHOD = 'POST';
     const DELETE_METHOD = 'DELETE';
     const BAD_REQUEST_STATUS_CODE = '400';
+    const ENTITY_DELETED_SUCCESSFULLY = true;
     const JSON_DECODE_AS_ARRAY = true;
     const CUSTOMERS_ENDPOINT = 'customers';
     const CARDS_ENDPOINT = 'cards';
