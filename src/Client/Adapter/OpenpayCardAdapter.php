@@ -10,6 +10,7 @@ namespace Openpay\Client\Adapter;
 use GuzzleHttp\ClientInterface;
 use Openpay\Client\Exception\OpenpayException;
 use Openpay\Client\Mapper\OpenpayCardMapper;
+use Openpay\Client\Validator\OpenpayCardTokenValidator;
 
 /**
  * Class OpenpayCardAdapter
@@ -75,8 +76,7 @@ class OpenpayCardAdapter extends OpenpayAdapterAbstract
         $responseArray = $this->callOpenpayClient($relativeUrl, $this->options);
 
         $cards = [];
-        foreach ($responseArray as $cardsReponse)
-        {
+        foreach ($responseArray as $cardsReponse) {
             $card = $this->cardMapper->create($cardsReponse);
             $cards[] = $card;
         }
@@ -92,6 +92,14 @@ class OpenpayCardAdapter extends OpenpayAdapterAbstract
      */
     public function store($customerId, array $parameters)
     {
+        $validator = new OpenpayCardTokenValidator();
+        $violations = $validator->validate($parameters);
+
+        if ($violations->count()>0) {
+            throw new OpenpayException($violations->__toString(), 400);
+        }
+
+        // POST https://sandbox-api.openpay.mx/v1/{MERCHANT_ID}/customers/{CUSTOMER_ID}/cards
         $relativeUrl = $this->merchantId .
             '/' .
             self::CUSTOMERS_ENDPOINT .
@@ -103,9 +111,9 @@ class OpenpayCardAdapter extends OpenpayAdapterAbstract
         $options = $this->options;
         $body = [
             'token_id' => $parameters['token_id'],
-            'device_session_id' => $parameters['device_session_id'],
+            'device_session_id' => (isset($parameters['device_session_id']))? $parameters['device_session_id'] : null,
         ];
-        $options['body'] = $body;
+        $options['json'] = $body;
 
         $response = $this->callOpenpayClient($relativeUrl, $options, self::POST_METHOD);
         $card = $this->cardMapper->create($response);

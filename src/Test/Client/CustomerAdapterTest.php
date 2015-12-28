@@ -84,6 +84,7 @@ class CustomerAdapterTest extends TestAbstract
     {
         $mockRequest = $this->getMockRequest();
         $mockArrayRequest = json_decode($mockRequest, true);
+        $mockArrayRequest['external_id'] = rand(1, 1000000);
         $openpayCustomer = $this->adapter->store($mockArrayRequest);
 
         $this->assertInstanceOf('Openpay\Client\Type\OpenpayCustomerType', $openpayCustomer);

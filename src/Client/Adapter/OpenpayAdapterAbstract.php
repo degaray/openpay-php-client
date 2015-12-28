@@ -23,6 +23,7 @@ class OpenpayAdapterAbstract
     const JSON_DECODE_AS_ARRAY = true;
     const CUSTOMERS_ENDPOINT = 'customers';
     const CARDS_ENDPOINT = 'cards';
+    const TOKENS_ENDPOINT = 'tokens';
 
     /**
      * @var ClientInterface

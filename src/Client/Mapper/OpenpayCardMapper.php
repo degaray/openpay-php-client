@@ -55,10 +55,12 @@ class OpenpayCardMapper
         $object->setExpirationMonth($data['expiration_month']);
         $object->setExpirationYear($data['expiration_year']);
 
-        $openpayAddressType = $this->openpayAddressMapper->create($data['address']);
-        $object->setAddress($openpayAddressType);
-
         /* Optional Fields */
+        if (isset($data['address'])) {
+            $openpayAddressType = $this->openpayAddressMapper->create($data['address']);
+            $object->setAddress($openpayAddressType);
+        }
+
         $object->setCvv2(isset($data['cvv2'])? $data['cvv2'] : null);
         $object->setAllowsCharges(isset($data['allows_charges'])? $data['allows_charges'] : null);
         $object->setAllowsPayouts(isset($data['allows_payouts'])? $data['allows_payouts'] : null);
