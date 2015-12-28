@@ -50,7 +50,8 @@ class OpenpayCustomerMapper
      */
     public function create(array $data)
     {
-        $object = $this->populate($this->openpayCustomerType, $data);
+        $newInstance = clone $this->openpayCustomerType;
+        $object = $this->populate($newInstance, $data);
 
         return $object;
     }
@@ -62,15 +63,22 @@ class OpenpayCustomerMapper
      */
     public function populate(OpenpayCustomerType $object, array $data)
     {
-        $object->setId($data['id']);
-        $object->setCreationDate($data['creation_date']);
         $object->setName($data['name']);
         $object->setLastName($data['last_name']);
         $object->setEmail($data['email']);
         $object->setPhoneNumber($data['phone_number']);
         $object->setClabe($data['clabe']);
-        $addressType = $this->addressMapper->create($data['address']);
-        $object->setAddress($addressType);
+
+        if (isset($data['address'])) {
+            $addressType = $this->addressMapper->create($data['address']);
+            $object->setAddress($addressType);
+        }
+        if (isset($data['creation_date'])) {
+            $object->setCreationDate($data['creation_date']);
+        }
+        if (isset($data['id'])) {
+            $object->setId($data['id']);
+        }
         if (isset($data['status'])) {
             $object->setStatus($data['status']);
         }

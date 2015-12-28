@@ -7,6 +7,7 @@ use Openpay\Client\Mapper\OpenpayAddressMapper;
 use Openpay\Client\Mapper\OpenpayCustomerMapper;
 use Openpay\Client\Mapper\OpenpayStoreMapper;
 use Openpay\Client\Type\OpenpayCustomerType;
+use Openpay\Client\Validator\OpenpayCustomerValidator;
 
 /**
  * Created by Xavier de Garay.
@@ -17,7 +18,7 @@ use Openpay\Client\Type\OpenpayCustomerType;
  * Class AdapterTest
  * @package Openpay\Test\Client
  */
-class AdapterTest extends TestAbstract
+class CustomerAdapterTest extends TestAbstract
 {
     /**
      * @var OpenpayCustomerAdapter
@@ -39,7 +40,7 @@ class AdapterTest extends TestAbstract
     }
 
     /**
-     * 
+     *
      */
     protected function setNewCustomerAdapter()
     {
@@ -68,8 +69,53 @@ class AdapterTest extends TestAbstract
         $openpayCustomerType = new OpenpayCustomerType();
         $customerMapper = new OpenpayCustomerMapper($addressMapper, $storeMapper, $openpayCustomerType);
         $customerType = new OpenpayCustomerType();
+        $customerValidator = new OpenpayCustomerValidator();
 
-        $this->adapter = new OpenpayCustomerAdapter($customerMapper, $customerType, $client, $config);
+        $this->adapter = new OpenpayCustomerAdapter(
+            $customerMapper,
+            $customerType,
+            $client,
+            $customerValidator,
+            $config
+        );
+    }
+
+    public function test_store_new_customer()
+    {
+        $mockRequest = $this->getMockRequest();
+        $mockArrayRequest = json_decode($mockRequest, true);
+        $openpayCustomer = $this->adapter->store($mockArrayRequest);
+
+        $this->assertInstanceOf('Openpay\Client\Type\OpenpayCustomerType', $openpayCustomer);
+        $this->assertNotEmpty($openpayCustomer->getId(), 'Id is not empty');
+    }
+
+    /**
+     * @return string
+     */
+    protected function getMockRequest()
+    {
+        $mockJsonRequest = '{
+           "name":"Rodrigo",
+           "last_name":"Velazco Perez",
+           "email":"rodrigo.velazco@payments.com",
+           "phone_number":"4425667045",
+           "external_id":"cliente1",
+           "status":"active",
+           "balance":103,
+           "address":{
+              "line1":"Av. 5 de febrero No. 1080 int Roble 207",
+              "line2":"Carrillo puerto",
+              "line3":"Zona industrial carrillo puerto",
+              "postal_code":"06500",
+              "state":"Querétaro",
+              "city":"Querétaro",
+              "country_code":"MX"
+           },
+           "clabe": "646180109400423323"
+        }';
+
+        return $mockJsonRequest;
     }
 
     /**

@@ -25,7 +25,8 @@ class OpenpayStoreMapper
         if (is_null($object)) {
             $object = new OpenpayStoreType();
         }
-        $object = $this->populate($object, $data);
+        $newInstance = clone $object;
+        $object = $this->populate($newInstance, $data);
 
         return $object;
     }

@@ -25,7 +25,8 @@ class OpenpayAddressMapper
         if (is_null($object)) {
             $object = new OpenpayAddressType();
         }
-        $object = $this->populate($object, $data);
+        $newInstance = clone $object;
+        $object = $this->populate($newInstance, $data);
 
         return $object;
     }

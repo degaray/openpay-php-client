@@ -12,59 +12,72 @@ use GuzzleHttp\ClientInterface;
 use Openpay\Client\Exception\OpenpayException;
 use Openpay\Client\Mapper\OpenpayCustomerMapper;
 use Openpay\Client\Type\OpenpayCustomerType;
+use Openpay\Client\Validator\OpenpayCustomerValidator;
 
-class OpenpayCustomerAdapter
+/**
+ * Class OpenpayCustomerAdapter
+ * @package Openpay\Client\Adapter
+ */
+class OpenpayCustomerAdapter extends OpenpayAdapterAbstract
 {
-    const GET_METHOD = 'GET';
-    const JSON_DECODE_AS_ARRAY = true;
-
-    /**
-     * @var ClientInterface
-     */
-    protected $client;
-
     /**
      * @var string
      */
     protected $customerId;
 
     /**
+     * @var string
+     */
+    protected $apiKey;
+
+    /**
+     * @var string
+     */
+    protected $merchantId;
+
+    /**
+     * @var OpenpayCustomerMapper
+     */
+    protected $customerMapper;
+
+    /**
+     * @var array
+     */
+    protected $options;
+
+    /**
+     * @var OpenpayCustomerValidator
+     */
+    protected $customerValidator;
+
+    /**
+     * @var OpenpayCustomerType
+     */
+    protected $customerType;
+
+    /**
      * OpenpayCustomerAdapter constructor.
      * @param OpenpayCustomerMapper $customerMapper
      * @param OpenpayCustomerType $customerType
      * @param ClientInterface $client
-     * @param $config
+     * @param OpenpayCustomerValidator $customerValidator
+     * @param array $config
      */
     public function __construct(
         OpenpayCustomerMapper $customerMapper,
         OpenpayCustomerType $customerType,
         ClientInterface $client,
-        $config
+        OpenpayCustomerValidator $customerValidator,
+        array $config
     ) {
-        $this->client = $client;
         $this->merchantId = $config['merchantId'];
         $this->apiKey = $config['apiKey'];
         $this->customerMapper = $customerMapper;
         $this->customerType = $customerType;
-        $this->options = $this->getOptions($this->apiKey);
-    }
+        $this->customerValidator = $customerValidator;
+        $this->options = $this->getHeaderOptions($this->apiKey);
 
-    /**
-     * @param $apiKey
-     * @return array
-     */
-    protected function getOptions($apiKey)
-    {
-         return [
-            'headers' => [
-                'Content-type' => 'application/json',
-                'Accept'     => 'application/json',
-            ],
-            'auth' => [
-                $apiKey,
-                ''
-            ]
-        ];
+        parent::__construct($client);
     }
 
     /**
@@ -75,17 +88,38 @@ class OpenpayCustomerAdapter
     public function get($customerId)
     {
         if ($customerId == null) {
-            throw new OpenpayException('Customer Id was is not set');
+            throw new OpenpayException('Customer Id is not set', self::BAD_REQUEST_STATUS_CODE);
         }
 
-        $relativeUrl = $this->merchantId . '/customers/' . $customerId;
-        try {
-            $responseArray = $this->callOpenpayClient($relativeUrl, $this->options);
-        } catch (\Exception $e) {
-            throw new OpenpayException($e->getMessage());
-        }
+        $relativeUrl = $this->merchantId . '/' . self::CUSTOMERS_ENDPOINT . '/' . $customerId;
 
+        $responseArray = $this->callOpenpayClient($relativeUrl, $this->options);
         $customer = $this->customerMapper->create($responseArray);
+
+        return $customer;
+    }
+
+    /**
+     * @param array $parameters
+     * @return OpenpayCustomerType
+     * @throws OpenpayException
+     */
+    public function store(array $parameters)
+    {
+        $violations = $this->customerValidator->validate($parameters);
+
+        if ($violations->count()>0) {
+            throw new OpenpayException($violations->__toString(), 400);
+        }
+
+        $relativeUrl = $this->merchantId . '/' . self::CUSTOMERS_ENDPOINT;
+
+        $options = $this->options;
+        $options['json'] = $parameters;
+
+        $response = $this->callOpenpayClient($relativeUrl, $options, self::POST_METHOD);
+
+        $customer = $this->customerMapper->create($response);
 
         return $customer;
     }
@@ -96,40 +130,16 @@ class OpenpayCustomerAdapter
      */
     public function getList()
     {
-        $relativeUrl = $this->merchantId . '/customers';
-        try {
-            $responseArray = $this->callOpenpayClient($relativeUrl, $this->options);
-        } catch (\Exception $e) {
-            throw new OpenpayException($e->getMessage());
-        }
+        $relativeUrl = $this->merchantId . '/' . self::CUSTOMERS_ENDPOINT;
+
+        $responseArray = $this->callOpenpayClient($relativeUrl, $this->options);
 
         $customers = [];
-        foreach ($responseArray as $customerReponse)
-        {
+        foreach ($responseArray as $customerReponse) {
             $customer = $this->customerMapper->create($customerReponse);
             $customers[] = $customer;
         }
 
         return $customers;
-    }
-
-    /**
-     * @param $url
-     * @param $options
-     * @param string $method
-     * @return mixed
-     * @throws OpenpayException
-     */
-    protected function callOpenpayClient($url, $options, $method = self::GET_METHOD)
-    {
-        try {
-            $rawResponse = $this->client->request($method, $url, $options);
-        } catch (\Exception $e) {
-            throw new OpenpayException($e->getMessage());
-        }
-        $responseContent = $rawResponse->getBody()->getContents();
-        $responseArray = json_decode($responseContent, self::JSON_DECODE_AS_ARRAY);
-
-        return $responseArray;
     }
 }
