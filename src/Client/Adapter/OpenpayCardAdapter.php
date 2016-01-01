@@ -95,7 +95,7 @@ class OpenpayCardAdapter extends OpenpayAdapterAbstract
         $validator = new OpenpayCardTokenValidator();
         $violations = $validator->validate($parameters);
 
-        if ($violations->count()>0) {
+        if ($violations->count() > 0) {
             throw new OpenpayException($violations->__toString(), 400);
         }
 
