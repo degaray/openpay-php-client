@@ -59,7 +59,7 @@ class OpenpayCardType
     protected $allows_charges;
 
     /**
-     * @var true
+     * @var bool
      */
     protected $allows_payouts;
 
@@ -206,7 +206,7 @@ class OpenpayCardType
     }
 
     /**
-     * @return string
+     * @return OpenpayAddressType
      */
     public function getAddress()
     {
@@ -214,7 +214,7 @@ class OpenpayCardType
     }
 
     /**
-     * @param string $address
+     * @param OpenpayAddressType $address
      */
     public function setAddress($address)
     {
@@ -238,15 +238,15 @@ class OpenpayCardType
     }
 
     /**
-     * @return true
+     * @return bool
      */
-    public function getAllowsPayouts()
+    public function isAllowsPayouts()
     {
         return $this->allows_payouts;
     }
 
     /**
-     * @param true $allows_payouts
+     * @param bool $allows_payouts
      */
     public function setAllowsPayouts($allows_payouts)
     {

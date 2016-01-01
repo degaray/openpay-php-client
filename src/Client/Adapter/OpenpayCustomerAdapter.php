@@ -68,7 +68,7 @@ class OpenpayCustomerAdapter extends OpenpayAdapterAbstract
         OpenpayCustomerType $customerType,
         ClientInterface $client,
         OpenpayCustomerValidator $customerValidator,
-        array $config
+        array $config = []
     ) {
         $this->merchantId = $config['merchantId'];
         $this->apiKey = $config['apiKey'];

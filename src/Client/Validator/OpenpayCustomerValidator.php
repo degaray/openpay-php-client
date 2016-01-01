@@ -38,7 +38,7 @@ class OpenpayCustomerValidator
             ],
             'id' => new Assert\Optional(),
             'requires_account' => new Assert\Optional(),
-            'phone_number' => new Assert\Length(['min' => 10, 'max' => 10]),
+            'phone_number' => new Assert\Optional(),
             'external_id' => new Assert\Optional(),
             'status' => new Assert\Optional(),
             'balance' => new Assert\Optional(),
