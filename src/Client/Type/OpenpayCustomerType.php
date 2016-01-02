@@ -11,7 +11,7 @@ namespace Openpay\Client\Type;
  * Class OpenpayCustomerType
  * @package Openpay\Client\Type
  */
-class OpenpayCustomerType
+class OpenpayCustomerType extends TypeAbstract implements \ArrayAccess
 {
     /**
      * @var int
