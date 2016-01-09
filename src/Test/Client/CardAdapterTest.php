@@ -14,6 +14,7 @@ use Openpay\Client\Adapter\OpenpayCustomerAdapter;
 use Openpay\Client\Mapper\OpenpayAddressMapper;
 use Openpay\Client\Mapper\OpenpayCardMapper;
 use Openpay\Client\Mapper\OpenpayCustomerMapper;
+use Openpay\Client\Mapper\OpenpayExceptionMapper;
 use Openpay\Client\Mapper\OpenpayStoreMapper;
 use Openpay\Client\Type\OpenpayCardType;
 use Openpay\Client\Type\OpenpayCustomerType;
@@ -71,9 +72,10 @@ class CardAdapterTest extends TestAbstract
         $cardType = new OpenpayCardType();
         $addressMapper = new OpenpayAddressMapper();
         $cardMapper = new OpenpayCardMapper($cardType, $addressMapper);
+        $openpayExceptionMapper = new OpenpayExceptionMapper();
 
-        $this->tokenAdapter = new OpenpayCardTokenAdapter($client, $cardMapper, $config);
-        $this->cardAdapter = new OpenpayCardAdapter($client, $cardMapper, $config);
+        $this->tokenAdapter = new OpenpayCardTokenAdapter($client, $cardMapper, $openpayExceptionMapper, $config);
+        $this->cardAdapter = new OpenpayCardAdapter($client, $cardMapper, $openpayExceptionMapper, $config);
 
         $customerType = new OpenpayCustomerType();
         $storeMapper = new OpenpayStoreMapper();
@@ -85,6 +87,7 @@ class CardAdapterTest extends TestAbstract
             $customerType,
             $client,
             $customerValidator,
+            $openpayExceptionMapper,
             $config
         );
     }

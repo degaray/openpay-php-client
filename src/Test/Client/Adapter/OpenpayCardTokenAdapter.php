@@ -11,6 +11,7 @@ namespace Openpay\Test\Client\Adapter;
 use GuzzleHttp\ClientInterface;
 use Openpay\Client\Adapter\OpenpayAdapterAbstract;
 use Openpay\Client\Mapper\OpenpayCardMapper;
+use Openpay\Client\Mapper\OpenpayExceptionMapper;
 
 class OpenpayCardTokenAdapter extends OpenpayAdapterAbstract
 {
@@ -38,11 +39,13 @@ class OpenpayCardTokenAdapter extends OpenpayAdapterAbstract
      * OpenpayCardTokenAdapter constructor.
      * @param ClientInterface $client
      * @param OpenpayCardMapper $cardMapper
+     * @param OpenpayExceptionMapper $exceptionMapper
      * @param array $config
      */
     public function __construct(
         ClientInterface $client,
         OpenpayCardMapper $cardMapper,
+        OpenpayExceptionMapper $exceptionMapper,
         array $config
     ) {
         $this->merchantId = $config['merchantId'];
@@ -50,7 +53,7 @@ class OpenpayCardTokenAdapter extends OpenpayAdapterAbstract
         $this->options = $this->getHeaderOptions($this->apiKey);
         $this->cardMapper = $cardMapper;
 
-        parent::__construct($client);
+        parent::__construct($client, $exceptionMapper);
     }
 
     /**

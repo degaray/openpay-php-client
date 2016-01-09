@@ -11,6 +11,7 @@ namespace Openpay\Client\Adapter;
 use GuzzleHttp\ClientInterface;
 use Openpay\Client\Exception\OpenpayException;
 use Openpay\Client\Mapper\OpenpayCustomerMapper;
+use Openpay\Client\Mapper\OpenpayExceptionMapper;
 use Openpay\Client\Type\OpenpayCustomerType;
 use Openpay\Client\Validator\OpenpayCustomerValidator;
 
@@ -20,6 +21,7 @@ use Openpay\Client\Validator\OpenpayCustomerValidator;
  */
 class OpenpayCustomerAdapter extends OpenpayAdapterAbstract
 {
+    const OPENPAY_BAD_REQUEST_CODE = 1001;
     /**
      * @var string
      */
@@ -61,6 +63,7 @@ class OpenpayCustomerAdapter extends OpenpayAdapterAbstract
      * @param OpenpayCustomerType $customerType
      * @param ClientInterface $client
      * @param OpenpayCustomerValidator $customerValidator
+     * @param OpenpayExceptionMapper $exceptionMapper
      * @param array $config
      */
     public function __construct(
@@ -68,6 +71,7 @@ class OpenpayCustomerAdapter extends OpenpayAdapterAbstract
         OpenpayCustomerType $customerType,
         ClientInterface $client,
         OpenpayCustomerValidator $customerValidator,
+        OpenpayExceptionMapper $exceptionMapper,
         array $config = []
     ) {
         $this->merchantId = $config['merchantId'];
@@ -77,7 +81,7 @@ class OpenpayCustomerAdapter extends OpenpayAdapterAbstract
         $this->customerValidator = $customerValidator;
         $this->options = $this->getHeaderOptions($this->apiKey);
 
-        parent::__construct($client);
+        parent::__construct($client, $exceptionMapper);
     }
 
     /**
@@ -108,8 +112,11 @@ class OpenpayCustomerAdapter extends OpenpayAdapterAbstract
     {
         $violations = $this->customerValidator->validate($parameters);
 
-        if ($violations->count()>0) {
-            throw new OpenpayException($violations->__toString(), 400);
+        if ($violations->count() > 0) {
+            $openpayException = new OpenpayException($violations->__toString(), self::BAD_REQUEST_STATUS_CODE);
+            $openpayException->setErrorCode(self::OPENPAY_BAD_REQUEST_CODE);
+            $openpayException->setDescription($violations->__toString());
+            throw $openpayException;
         }
 
         $relativeUrl = $this->merchantId . '/' . self::CUSTOMERS_ENDPOINT;

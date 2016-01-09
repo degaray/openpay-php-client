@@ -3,6 +3,8 @@
 namespace Openpay\Client\Adapter;
 use GuzzleHttp\ClientInterface;
 use Openpay\Client\Exception\OpenpayException;
+use Openpay\Client\Exception\OpenpayExceptionsDictionary;
+use Openpay\Client\Mapper\OpenpayExceptionMapper;
 
 
 /**
@@ -25,6 +27,9 @@ class OpenpayAdapterAbstract
     const CUSTOMERS_ENDPOINT = 'customers';
     const CARDS_ENDPOINT = 'cards';
     const TOKENS_ENDPOINT = 'tokens';
+    const EXCEPTION_RESPONSE_JSON_INDEX = 1;
+    const JSON_DECODE_TO_ARRAY = true;
+    const DESCRIPTION_DICTIONARY_KEY = 'description';
 
     /**
      * @var ClientInterface
@@ -32,12 +37,19 @@ class OpenpayAdapterAbstract
     protected $client;
 
     /**
+     * @var OpenpayExceptionMapper
+     */
+    protected $exceptionMapper;
+
+    /**
      * OpenpayAdapterAbstract constructor.
      * @param ClientInterface $client
+     * @param OpenpayExceptionMapper $exceptionMapper
      */
-    public function __construct(ClientInterface $client)
+    public function __construct(ClientInterface $client, OpenpayExceptionMapper $exceptionMapper)
     {
         $this->client = $client;
+        $this->exceptionMapper = $exceptionMapper;
     }
 
     /**
@@ -72,7 +84,27 @@ class OpenpayAdapterAbstract
         try {
             $rawResponse = $this->client->request($method, $url, $options);
         } catch (\Exception $e) {
-            throw new OpenpayException($e->getMessage(), $e->getCode(), $e);
+            $responseParts = explode("\n", $e->getMessage());
+            $openpayException = new OpenpayException($responseParts[0], $e->getCode(), $e);
+
+            $headers = $e->getResponse()->getHeaders();
+
+            $values['error_code'] = isset($headers['OP-Error-Code'])? $headers['OP-Error-Code'][0] : null;
+            $values['request_id'] = isset($headers['OpenPay-Request-ID'])? $headers['OpenPay-Request-ID'][0] : null;
+            $dictionary = OpenpayExceptionsDictionary::get();
+
+            if (isset($dictionary[$values['error_code']])) {
+                $values['description'] = $dictionary[$values['error_code']][self::DESCRIPTION_DICTIONARY_KEY];
+            }
+
+            if (isset($responseParts[self::EXCEPTION_RESPONSE_JSON_INDEX])) {
+                $responseObjectStr = $responseParts[self::EXCEPTION_RESPONSE_JSON_INDEX];
+                $responseObject = json_decode($responseObjectStr, self::JSON_DECODE_TO_ARRAY);
+                $values = array_merge($values, $responseObject);
+                $openpayException = $this->exceptionMapper->create($values, $openpayException);
+            }
+
+            throw $openpayException;
         }
         $responseContent = $rawResponse->getBody()->getContents();
         $responseArray = json_decode($responseContent, self::JSON_DECODE_AS_ARRAY);
