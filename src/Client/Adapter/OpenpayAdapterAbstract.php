@@ -100,7 +100,10 @@ class OpenpayAdapterAbstract
             if (isset($responseParts[self::EXCEPTION_RESPONSE_JSON_INDEX])) {
                 $responseObjectStr = $responseParts[self::EXCEPTION_RESPONSE_JSON_INDEX];
                 $responseObject = json_decode($responseObjectStr, self::JSON_DECODE_TO_ARRAY);
-                $values = array_merge($values, $responseObject);
+                // sometimes openpay response is a malformed json
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $values = array_merge($values, $responseObject);
+                }
                 $openpayException = $this->exceptionMapper->create($values, $openpayException);
             }
 
