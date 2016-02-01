@@ -2,6 +2,7 @@
 
 namespace Openpay\Test\Client;
 use GuzzleHttp\Client;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Created by Xavier de Garay.

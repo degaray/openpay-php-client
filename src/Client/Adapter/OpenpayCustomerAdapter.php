@@ -21,7 +21,6 @@ use Openpay\Client\Validator\OpenpayCustomerValidator;
  */
 class OpenpayCustomerAdapter extends OpenpayAdapterAbstract
 {
-    const OPENPAY_BAD_REQUEST_CODE = 1001;
     /**
      * @var string
      */

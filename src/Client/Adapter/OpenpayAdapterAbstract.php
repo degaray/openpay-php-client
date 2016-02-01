@@ -27,9 +27,11 @@ class OpenpayAdapterAbstract
     const CUSTOMERS_ENDPOINT = 'customers';
     const CARDS_ENDPOINT = 'cards';
     const TOKENS_ENDPOINT = 'tokens';
+    const CHARGES_ENDPOINT = 'charges';
     const EXCEPTION_RESPONSE_JSON_INDEX = 1;
     const JSON_DECODE_TO_ARRAY = true;
     const DESCRIPTION_DICTIONARY_KEY = 'description';
+    const OPENPAY_BAD_REQUEST_CODE = 1001;
 
     /**
      * @var ClientInterface

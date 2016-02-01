@@ -1,32 +1,35 @@
 <?php
 /**
- * Created by Xavier de Garay.
- * User: degaray
- * Date: 22/12/15
- * Time: 03:22 PM
+ * Created by PhpStorm.
+ * User: xavier
+ * Date: 29/01/16
+ * Time: 02:05 PM
  */
 
-namespace Openpay\Test\Client\Adapter;
-
+namespace Openpay\Test\Client;
 
 use Openpay\Client\Adapter\OpenpayCardAdapter;
+use Openpay\Client\Adapter\OpenpayChargeAdapter;
 use Openpay\Client\Adapter\OpenpayCustomerAdapter;
 use Openpay\Client\Mapper\OpenpayAddressMapper;
+use Openpay\Client\Mapper\OpenpayBankAccountMapper;
 use Openpay\Client\Mapper\OpenpayCardMapper;
 use Openpay\Client\Mapper\OpenpayCustomerMapper;
 use Openpay\Client\Mapper\OpenpayExceptionMapper;
 use Openpay\Client\Mapper\OpenpayStoreMapper;
+use Openpay\Client\Mapper\OpenpayTransactionMapper;
 use Openpay\Client\Type\OpenpayCardType;
 use Openpay\Client\Type\OpenpayCustomerType;
+use Openpay\Client\Validator\OpenpayChargeValidator;
 use Openpay\Client\Validator\OpenpayCustomerValidator;
-use Openpay\Test\Client\TestAbstract;
+use Openpay\Test\Client\Adapter\OpenpayCardTokenAdapter;
 
-class CardAdapterTest extends TestAbstract
+class ChargeAdapterTest extends TestAbstract
 {
     /**
-     * @var OpenpayCardAdapter
+     * @var OpenpayChargeAdapter
      */
-    protected $cardAdapter;
+    protected $chargeAdapter;
 
     /**
      * @var OpenpayCustomerAdapter
@@ -39,18 +42,23 @@ class CardAdapterTest extends TestAbstract
     protected $tokenAdapter;
 
     /**
+     * @var OpenpayCardAdapter
+     */
+    protected $cardAdapter;
+
+    /**
      *
      */
     public function setUp()
     {
-        $this->setNewCardAdapter();
+        $this->setNewChargeAdapter();
         parent::setUp();
     }
 
     /**
      *
      */
-    protected function setNewCardAdapter()
+    protected function setNewChargeAdapter()
     {
         $parametersNeeded = ['sandbox', 'merchantId', 'apiKey'];
         $parameters = $this->getParameters($parametersNeeded);
@@ -90,12 +98,30 @@ class CardAdapterTest extends TestAbstract
             $openpayExceptionMapper,
             $config
         );
+
+        $cardType = new OpenpayCardType();
+        $addressMapper = new OpenpayAddressMapper();
+        $cardMapper = new OpenpayCardMapper($cardType, $addressMapper);
+        $openpayExceptionMapper = new OpenpayExceptionMapper();
+
+        $chargeValidator = new OpenpayChargeValidator();
+        $bankAccountMapper = new OpenpayBankAccountMapper();
+
+        $transactionMapper = new OpenpayTransactionMapper(
+            $bankAccountMapper,
+            $cardMapper
+        );
+
+        $this->chargeAdapter = new OpenpayChargeAdapter(
+            $client,
+            $openpayExceptionMapper,
+            $chargeValidator,
+            $transactionMapper,
+            $config
+        );
     }
 
-    /**
-     * @throws \Openpay\Client\Exception\OpenpayException
-     */
-    public function test_store_new_card()
+    public function test_charge_customer_account_with_card()
     {
         $openpayCustomers = $this->customerAdapter->getList();
 
@@ -103,45 +129,44 @@ class CardAdapterTest extends TestAbstract
         $mockCardInfo = json_decode($this->getMockCardInfo(), true);
         $openpayCardToken = $this->tokenAdapter->store($mockCardInfo);
 
-        $parameters = $this->getMockRequest();
+        $parameters = $this->getCardMockRequest();
         $parametersArray = json_decode($parameters, true);
         $parametersArray['token_id'] = $openpayCardToken['token_id'];
         $openpayCard = $this->cardAdapter->store($testCustomerId, $parametersArray);
 
-        $this->assertInstanceOf('Openpay\Client\Type\OpenpayCardType', $openpayCard);
-        $this->assertNotEmpty($openpayCard->getId(), 'Id is not empty');
+        $chargeMockRequest = $this->getChargeMockRequest();
+        $cardId = $openpayCard->getId();
+        $parameters = json_decode($chargeMockRequest, true);
+        $parameters['source_id'] = $cardId;
+
+        $openpayTransaction = $this->chargeAdapter->chargeCustomerCard($testCustomerId, $parameters);
+
+        $this->assertInstanceOf('Openpay\Client\Type\OpenpayTransactionType', $openpayTransaction);
+        $this->assertNotEmpty($openpayTransaction->getId(), 'Id is not empty');
+        $this->assertNotEmpty($openpayTransaction->getAuthorization(), 'Authorization number is not empty');
+        $this->assertEquals($openpayTransaction->getStatus(), 'completed');
+        $this->assertGreaterThan(0, $openpayTransaction->getAmount());
     }
 
-    /**
-     * @throws \Openpay\Client\Exception\OpenpayException
-     */
-    public function test_get_card_list()
+    public function getChargeMockRequest()
     {
-        $openpayCustomers = $this->customerAdapter->getList();
+        $mockJsonRequest = '{
+           "source_id" : "{{card_id}}",
+           "method" : "card",
+           "amount" : 100,
+           "currency" : "MXN",
+           "description" : "Cargo inicial a mi cuenta",
+           "order_id" : null,
+           "device_session_id" : "kR1MiQhz2otdIuUlQkbEyitIqVMiI16f"
+        }';
 
-        $testCustomerId = $openpayCustomers[count($openpayCustomers)-1]->getId();
-        $openpayCards = $this->cardAdapter->getList($testCustomerId);
-
-        $this->assertGreaterThan(0, count($openpayCards));
-        $this->assertInstanceOf('Openpay\Client\Type\OpenpayCardType', $openpayCards[0]);
-        $this->assertNotEmpty($openpayCards[0]->getId(), 'Id is not empty');
-    }
-
-    public function test_delete_card()
-    {
-        $openpayCustomers = $this->customerAdapter->getList();
-        $testCustomerId = $openpayCustomers[count($openpayCustomers)-1]->getId();
-        $openpayCards = $this->cardAdapter->getList($testCustomerId);
-
-        $deleted = $this->cardAdapter->delete($testCustomerId, $openpayCards[0]->getId());
-
-        $this->assertTrue($deleted);
+        return $mockJsonRequest;
     }
 
     /**
      * @return string
      */
-    public function getMockRequest()
+    public function getCardMockRequest()
     {
         $mockJsonRequest = '{
             "token_id":"tokgslwpdcrkhlgxqi9a",
@@ -151,6 +176,9 @@ class CardAdapterTest extends TestAbstract
         return $mockJsonRequest;
     }
 
+    /**
+     * @return string
+     */
     public function getMockCardInfo()
     {
         $mockCardInfo = '{
