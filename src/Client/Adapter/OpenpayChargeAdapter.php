@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: xavier
- * Date: 28/01/16
- * Time: 10:52 AM
- */
 
 namespace Openpay\Client\Adapter;
-
 
 use GuzzleHttp\ClientInterface;
 use Openpay\Client\Exception\OpenpayException;
@@ -15,7 +8,17 @@ use Openpay\Client\Mapper\OpenpayExceptionMapper;
 use Openpay\Client\Mapper\OpenpayTransactionMapper;
 use Openpay\Client\Validator\OpenpayChargeValidator;
 
-class OpenpayChargeAdapter extends OpenpayAdapterAbstract
+
+/**
+ * Created by PhpStorm.
+ * User: xavier
+ * Date: 28/01/16
+ * Time: 10:52 AM
+ *
+ * Class OpenpayChargeAdapter
+ * @package Openpay\Client\Adapter
+ */
+class OpenpayChargeAdapter extends OpenpayAdapterAbstract implements OpenpayChargeAdapterInterface
 {
     /**
      * @var OpenpayChargeValidator
@@ -57,6 +60,12 @@ class OpenpayChargeAdapter extends OpenpayAdapterAbstract
         $this->options = $this->getHeaderOptions($this->apiKey);
     }
 
+    /**
+     * @param $customerId
+     * @param $parameters
+     * @return \Openpay\Client\Type\OpenpayTransactionType
+     * @throws OpenpayException
+     */
     public function chargeCustomerCard($customerId, $parameters)
     {
         $violations = $this->chargeValidator->validate($parameters);
