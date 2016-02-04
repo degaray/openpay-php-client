@@ -69,6 +69,11 @@ class OpenpayCustomerType
     protected $store;
 
     /**
+     * @var string
+     */
+    protected $external_id;
+
+    /**
      * @return int
      */
     public function getId()
@@ -80,6 +85,22 @@ class OpenpayCustomerType
      * @param int $id
      */
     public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * @return int
+     */
+    public function getEntityId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setEntityId($id)
     {
         $this->id = $id;
     }
@@ -242,5 +263,21 @@ class OpenpayCustomerType
     public function setStore(OpenpayStoreType $store)
     {
         $this->store = $store;
+    }
+
+    /**
+     * @return string
+     */
+    public function getExternalId()
+    {
+        return $this->external_id;
+    }
+
+    /**
+     * @param string $external_id
+     */
+    public function setExternalId($external_id)
+    {
+        $this->external_id = $external_id;
     }
 }

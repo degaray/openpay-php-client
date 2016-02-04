@@ -89,7 +89,9 @@ class OpenpayAdapterAbstract
             $responseParts = explode("\n", $e->getMessage());
             $openpayException = new OpenpayException($responseParts[0], $e->getCode(), $e);
 
-            $headers = $e->getResponse()->getHeaders();
+            if (!is_null($e->getResponse())) {
+                $headers = $e->getResponse()->getHeaders();
+            }
 
             $values['error_code'] = isset($headers['OP-Error-Code'])? $headers['OP-Error-Code'][0] : null;
             $values['request_id'] = isset($headers['OpenPay-Request-ID'])? $headers['OpenPay-Request-ID'][0] : null;
