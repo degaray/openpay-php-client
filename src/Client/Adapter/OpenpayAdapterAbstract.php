@@ -25,6 +25,7 @@ class OpenpayAdapterAbstract
     const ENTITY_DELETED_SUCCESSFULLY = true;
     const JSON_DECODE_AS_ARRAY = true;
     const CUSTOMERS_ENDPOINT = 'customers';
+    const FEES_ENDPOINT = 'fees';
     const CARDS_ENDPOINT = 'cards';
     const TOKENS_ENDPOINT = 'tokens';
     const CHARGES_ENDPOINT = 'charges';
