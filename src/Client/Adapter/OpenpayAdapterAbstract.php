@@ -29,6 +29,7 @@ class OpenpayAdapterAbstract
     const CARDS_ENDPOINT = 'cards';
     const TOKENS_ENDPOINT = 'tokens';
     const CHARGES_ENDPOINT = 'charges';
+    const TRANSFERS_ENDPOINT = 'transfers';
     const EXCEPTION_RESPONSE_JSON_INDEX = 1;
     const JSON_DECODE_TO_ARRAY = true;
     const DESCRIPTION_DICTIONARY_KEY = 'description';
