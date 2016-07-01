@@ -11,7 +11,7 @@ namespace Openpay\Client\Type;
  * Class OpenpayStoreType
  * @package Openpay\Client\Type
  */
-class OpenpayStoreType extends TypeAbstract implements \ArrayAccess
+class OpenpayStoreType extends TypeAbstract
 {
     /**
      * @var string
