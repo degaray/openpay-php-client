@@ -1,7 +1,7 @@
 {
   "name": "degaray/openpay-php-client",
   "description": "Client for the Openpay Rest service using namespaces and Guzzle",
-  "minimum-stability": "stable",
+  "minimum-stability": "alpha",
   "license": "MIT",
   "authors": [
     {
