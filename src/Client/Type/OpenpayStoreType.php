@@ -2,16 +2,13 @@
 
 namespace Openpay\Client\Type;
 
+use Degaray\Openpay\Api\Data\StoreInterface;
+
 /**
- * Created by Xavier de Garay.
- * User: degaray
- * Date: 17/12/15
- * Time: 10:33 AM
- *
  * Class OpenpayStoreType
  * @package Openpay\Client\Type
  */
-class OpenpayStoreType extends TypeAbstract
+class OpenpayStoreType extends TypeAbstract implements StoreInterface
 {
     /**
      * @var string

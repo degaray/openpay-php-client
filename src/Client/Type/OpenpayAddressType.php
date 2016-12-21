@@ -3,11 +3,6 @@
 namespace Openpay\Client\Type;
 
 /**
- * Created by Xavier de Garay.
- * User: degaray
- * Date: 17/12/15
- * Time: 10:30 AM
- *
  * Class OpenpayAddressType
  * @package Openpay\Client\Type
  */

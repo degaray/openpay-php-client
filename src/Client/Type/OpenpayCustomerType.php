@@ -2,16 +2,14 @@
 
 namespace Openpay\Client\Type;
 
+use Degaray\Openpay\Api\Data\AddressInterface;
+use Degaray\Openpay\Api\Data\StoreInterface;
+
 /**
- * Created by Xavier de Garay.
- * User: degaray
- * Date: 17/12/15
- * Time: 10:28 AM
- *
  * Class OpenpayCustomerType
  * @package Openpay\Client\Type
  */
-class OpenpayCustomerType
+class OpenpayCustomerType implements \Degaray\Openpay\Api\Data\CustomerInterface
 {
     /**
      * @var int
@@ -242,9 +240,9 @@ class OpenpayCustomerType
     }
 
     /**
-     * @param OpenpayAddressType $address
+     * @param AddressInterface $address
      */
-    public function setAddress(OpenpayAddressType $address)
+    public function setAddress(AddressInterface $address)
     {
         $this->address = $address;
     }
@@ -258,9 +256,9 @@ class OpenpayCustomerType
     }
 
     /**
-     * @param OpenpayStoreType $store
+     * @param StoreInterface $store
      */
-    public function setStore(OpenpayStoreType $store)
+    public function setStore(StoreInterface $store)
     {
         $this->store = $store;
     }
