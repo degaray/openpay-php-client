@@ -34,6 +34,7 @@ class OpenpayAdapterAbstract
     const JSON_DECODE_TO_ARRAY = true;
     const DESCRIPTION_DICTIONARY_KEY = 'description';
     const OPENPAY_BAD_REQUEST_CODE = 1001;
+    const REFUND_ENDPOINT = 'refund';
 
     /**
      * @var ClientInterface

@@ -22,4 +22,13 @@ interface OpenpayChargeAdapterInterface
      * @throws OpenpayException
      */
     public function chargeCustomerCard($customerId, $parameters);
+
+    /**
+     * @param $customerId
+     * @param $transactionId
+     * @param $parameters
+     * @return OpenpayTransactionType
+     * @throws OpenpayException
+     */
+    public function refundCustomerCard($customerId, $transactionId, $parameters);
 }

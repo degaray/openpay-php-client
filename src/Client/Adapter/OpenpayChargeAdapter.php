@@ -6,6 +6,7 @@ use GuzzleHttp\ClientInterface;
 use Openpay\Client\Exception\OpenpayException;
 use Openpay\Client\Mapper\OpenpayExceptionMapper;
 use Openpay\Client\Mapper\OpenpayTransactionMapper;
+use Openpay\Client\Validator\OpenpayChargeRefundValidator;
 use Openpay\Client\Validator\OpenpayChargeValidator;
 
 
@@ -41,6 +42,11 @@ class OpenpayChargeAdapter extends OpenpayAdapterAbstract implements OpenpayChar
     protected $transactionMapper;
 
     /**
+     * @var OpenpayChargeRefundValidator
+     */
+    protected $chargeRefundValidator;
+
+    /**
      * @var array
      */
     protected $options;
@@ -50,10 +56,12 @@ class OpenpayChargeAdapter extends OpenpayAdapterAbstract implements OpenpayChar
         OpenpayExceptionMapper $exceptionMapper,
         OpenpayChargeValidator $validator,
         OpenpayTransactionMapper $transactionMapper,
+        OpenpayChargeRefundValidator $chargeRefundValidator,
         array $config = []
     ) {
         parent::__construct($client, $exceptionMapper);
         $this->chargeValidator = $validator;
+        $this->chargeRefundValidator = $chargeRefundValidator;
         $this->merchantId = $config['merchantId'];
         $this->apiKey = $config['apiKey'];
         $this->transactionMapper = $transactionMapper;
@@ -81,6 +89,41 @@ class OpenpayChargeAdapter extends OpenpayAdapterAbstract implements OpenpayChar
             '/' . self::CUSTOMERS_ENDPOINT .
             '/' . $customerId .
             '/' . self::CHARGES_ENDPOINT;
+
+        $options = $this->options;
+        $options['json'] = $parameters;
+
+        $response = $this->callOpenpayClient($relativeUrl, $options, self::POST_METHOD);
+
+        $transaction = $this->transactionMapper->create($response);
+
+        return $transaction;
+    }
+
+    /**
+     * @param $customerId
+     * @param $transactionId
+     * @param $parameters
+     * @return \Openpay\Client\Type\OpenpayTransactionType
+     * @throws OpenpayException
+     */
+    public function refundCustomerCard($customerId, $transactionId, $parameters)
+    {
+        $violations = $this->chargeRefundValidator->validate($parameters);
+
+        if ($violations->count() > 0) {
+            $openpayException = new OpenpayException($violations->__toString(), self::BAD_REQUEST_STATUS_CODE);
+            $openpayException->setErrorCode(self::OPENPAY_BAD_REQUEST_CODE);
+            $openpayException->setDescription($violations->__toString());
+            throw $openpayException;
+        }
+
+        $relativeUrl = $this->merchantId .
+            '/' . self::CUSTOMERS_ENDPOINT .
+            '/' . $customerId .
+            '/' . self::CHARGES_ENDPOINT .
+            '/' . $transactionId .
+            '/' . self::REFUND_ENDPOINT;
 
         $options = $this->options;
         $options['json'] = $parameters;
